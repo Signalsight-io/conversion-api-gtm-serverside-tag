@@ -6,11 +6,9 @@ ___INFO___
   "categories": [
     "ADVERTISING",
     "ANALYTICS",
-    "ATTRIBUTION",
     "CONVERSIONS",
     "MARKETING",
-    "REMARKETING",
-    "LEAD_GENERATION"
+    "REMARKETING"
   ],
   "securityGroups": [],
   "id": "cvt_temp_public_id",
