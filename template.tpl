@@ -236,6 +236,9 @@ const logToConsole = require('logToConsole');
 const Math = require('Math');
 const getCookieValues = require('getCookieValues');
 const setCookie = require('setCookie');
+const makeString = require('makeString');
+const getType = require('getType');
+const toBase64 = require('toBase64');
 
 function isHashed(value) {
   if (!value) {
@@ -752,3 +755,27 @@ ___SERVER_PERMISSIONS___
     "isRequired": true
   }
 ]
+
+___TESTS___
+
+scenarios:
+- name: Send purchase event
+code: |-
+const mockData = {
+apiToken: '123abc',
+eventType: 'Purchase',
+actionSource: 'signalsight',
+currency: 'USD',
+value: '130',
+content_category: 'E-commerce',
+content_name: 'Product'
+};
+
+
+runCode(mockData);
+setup: ''
+
+
+___NOTES___
+
+Created on 14/11/2024, 18:12
