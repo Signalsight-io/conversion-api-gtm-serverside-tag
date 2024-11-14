@@ -234,7 +234,6 @@ const generateRandom = require('generateRandom');
 const sha256Sync = require('sha256Sync');
 const logToConsole = require('logToConsole');
 const Math = require('Math');
-const Object = require('Object');
 const getCookieValues = require('getCookieValues');
 const setCookie = require('setCookie');
 
