@@ -844,20 +844,11 @@ ___SERVER_PERMISSIONS___
 ___TESTS___
 
 scenarios:
-- name: Send purchase event
-code: |-
-const mockData = {
-apiToken: '123abc',
-eventType: 'Purchase',
-actionSource: 'signalsight',
-currency: 'USD',
-value: '130',
-content_category: 'E-commerce',
-content_name: 'Product'
-};
+- name: Check semantical errors
+  code: |-
+    const mockData = {apiToken: '123abc',eventType: 'Purchase',actionSource: 'signalsight',currency:'USD',value: '130',content_category: 'E-commerce',content_name: 'Product'};
 
-
-runCode(mockData);
+    runCode(mockData);
 setup: ''
 
 
