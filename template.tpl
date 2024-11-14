@@ -246,7 +246,6 @@ function isHashed(value) {
   return makeString(value).match('^[A-Fa-f0-9]{64}$') !== null;
 }
 
-// Helper function to hash user data
 function hashData(key, value) {
   if (!value) {
     return value;
@@ -301,7 +300,7 @@ function saveEecData(userData) {
     path: '/',
     samesite: 'strict',
     secure: true,
-    'max-age': 7776000, // 90 days
+    'max-age': 7776000,
     HttpOnly: true
   });
 }
@@ -350,7 +349,6 @@ if (eventData.enableEnhancement) {
   setGtmEecCookie(eventData.user_data);
 }
 
-// Helper function to get user data
 function getAmpData(eventData) {
   const userData = eventData.user_data || {};
   
@@ -358,14 +356,6 @@ function getAmpData(eventData) {
 
   let fbc = getCookieValues('_fbc')[0] || commonCookie._fbc;
   let fbp = getCookieValues('_fbp')[0] || commonCookie._fbp;
-
-//tt _ttp, ttclid
-//snapchat _scid
-//pinterest _epik
-
-//Enable Event Enhancement _gtmeec
-//url de fbclid varsa fb seçiliyse fbc set cookie ( yoksa )
-//url de ttclid varsa tt seçiliyse ttclid set cookie ( yoksa )
 
   return {
     ph: hashData(userData.ph),
@@ -386,7 +376,6 @@ function getAmpData(eventData) {
   };
 }
 
-// Helper function to get product data
 function getProductData(items) {
   return items.map(item => ({
     id: item.item_id,
@@ -395,7 +384,6 @@ function getProductData(items) {
 }
 
 function padStartCustom(str, targetLength, padString) {
-  // Convert the input to a string manually if it's not already a string
   str = (str === undefined || str === null) ? '' : '' + str;
   padString = (padString === undefined || padString === null) ? ' ' : '' + padString;
   
@@ -406,24 +394,20 @@ function padStartCustom(str, targetLength, padString) {
   targetLength = targetLength - str.length;
   
   while (padString.length < targetLength) {
-    padString += padString; // Repeat padString until it's long enough
+    padString += padString;
   }
   
   return padString.slice(0, targetLength) + str;
 }
 
-
-// Helper function to generate a UUID-like identifier
 function generateEid() {
   const segments = [8, 4, 4, 4, 12];
   return segments.map(segment => {
-    // Ensure the result is treated as a string before applying padStart
     var tempEid = generateRandom(0, Math.pow(16, segment) - 1).toString(16);
-    return padStartCustom(tempEid,segment, '0');  // Convert to hexadecimal
+    return padStartCustom(tempEid,segment, '0');
   }).join('-');
 }
 
-// Main function to send event to API
 function sendEventToApi(eventData) {
   logToConsole(eventData);
   const event = {
@@ -441,10 +425,6 @@ function sendEventToApi(eventData) {
     },
     amp: getAmpData(eventData)
   };
-
-  // Remove undefined properties
-  //Object.keys(event.p).forEach(key => event.p[key] === undefined && delete event.p[key]);
-  //Object.keys(event.amp).forEach(key => event.amp[key] === undefined && delete event.amp[key]);
 
   const requestBody = JSON.stringify(event);
   const requestHeaders = {
@@ -465,7 +445,6 @@ function sendEventToApi(eventData) {
   }, requestHeaders, requestBody);
 }
 
-// Get all event data and send to API
 const eventData = getAllEventData();
 sendEventToApi(eventData);
 
