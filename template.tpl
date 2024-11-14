@@ -23,7 +23,7 @@ ___INFO___
 
 {
     "displayName": "SignalSight Conversion API",
-    "description": "A Google Tag Manager server-side tag template for integrating with SignalSight's Conversion API Gateway, enabling seamless event forwarding to multiple advertising platforms including Facebook, TikTok, Google, Snapchat, Pinterest, and more.\nVisit us at: https://www.signalsight.io",
+    "description": "GTM server-side tag template for integrating with SignalSight's Conversion API Gateway, enabling smooth event forwarding to ad platforms like Facebook, TikTok, Google, and Snapchat.",
     "categories": [
         "ADVERTISING",
         "ANALYTICS",
