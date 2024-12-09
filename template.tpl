@@ -1,22 +1,17 @@
-﻿// Copyright 2019 Google LLC
-
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-
-//     https://www.apache.org/licenses/LICENSE-2.0
-
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-___INFO___
+﻿___INFO___
 
 {
   "displayName": "SignalSight Conversion API",
-  "description": "GTM server-side tag template for integrating with SignalSight Conversion API Gateway, enabling smooth event forwarding to ad platforms like Facebook, TikTok, Google, and Snapchat.",
+  "description": "GTM server-side tag template for integrating with SignalSight\u0027s Conversion API Gateway, enabling smooth event forwarding to ad platforms like Facebook, TikTok, Google, and Snapchat.",
+  "categories": [
+    "ADVERTISING",
+    "ANALYTICS",
+    "ATTRIBUTION",
+    "CONVERSIONS",
+    "MARKETING",
+    "REMARKETING",
+    "LEAD_GENERATION"
+  ],
   "securityGroups": [],
   "id": "cvt_temp_public_id",
   "type": "TAG",
@@ -36,18 +31,547 @@ ___TEMPLATE_PARAMETERS___
 
 [
   {
-    "help": "Enter an example measurement ID. The value can be any character. This is only an example.",
-    "displayName": "Example Measurement ID",
-    "defaultValue": "foobarbaz1234",
-    "name": "MeasurementID",
-    "type": "TEXT"
+    "type": "TEXT",
+    "name": "apiToken",
+    "displayName": "API Token",
+    "simpleValueType": true,
+    "valueValidators": [
+      {
+        "type": "NON_EMPTY"
+      }
+    ],
+    "help": "Enter your API token for authentication."
+  },
+  {
+    "type": "TEXT",
+    "name": "test_event_code",
+    "displayName": "Test Event Code (optional)",
+    "simpleValueType": true
+  },
+  {
+    "type": "GROUP",
+    "name": "platformSettings",
+    "label": "Platform Settings",
+    "description": "Configure platform-specific settings",
+    "subParams": [
+      {
+        "type": "CHECKBOX",
+        "name": "fb",
+        "checkboxText": "Facebook",
+        "simpleValueType": true,
+        "defaultValue": true
+      },
+      {
+        "type": "CHECKBOX",
+        "name": "tt",
+        "checkboxText": "Tiktok",
+        "simpleValueType": true
+      },
+      {
+        "type": "CHECKBOX",
+        "name": "ge",
+        "checkboxText": "Google",
+        "simpleValueType": true
+      },
+      {
+        "type": "CHECKBOX",
+        "name": "sn",
+        "checkboxText": "Snapchat",
+        "simpleValueType": true
+      },
+      {
+        "type": "CHECKBOX",
+        "name": "tw",
+        "checkboxText": "Twitter",
+        "simpleValueType": true
+      },
+      {
+        "type": "CHECKBOX",
+        "name": "pn",
+        "checkboxText": "Pinterest",
+        "simpleValueType": true
+      }
+    ]
+  },
+  {
+    "type": "CHECKBOX",
+    "name": "enableEnhancement",
+    "checkboxText": "Enable Event Enhancement",
+    "simpleValueType": true,
+    "help": "Enable Use of HTTP Only Secure Cookie (gtmeec) to Enhance Event Data",
+    "defaultValue": true
+  },
+  {
+    "type": "SELECT",
+    "name": "eventType",
+    "displayName": "Event Type",
+    "macrosInSelect": false,
+    "selectItems": [
+      {
+        "value": "Purchase",
+        "displayValue": "Purchase"
+      },
+      {
+        "value": "ViewContent",
+        "displayValue": "View Content"
+      },
+      {
+        "value": "AddToCart",
+        "displayValue": "Add To Cart"
+      },
+      {
+        "value": "Lead",
+        "displayValue": "Lead"
+      },
+      {
+        "value": "CompleteRegistration",
+        "displayValue": "Complete Registration"
+      },
+      {
+        "value": "Contact",
+        "displayValue": "Contact"
+      },
+      {
+        "value": "VisitToPhysicalStore",
+        "displayValue": "Visit To Physical Store"
+      },
+      {
+        "value": "VisitToWhatsApp",
+        "displayValue": "Visit To WhatsApp"
+      },
+      {
+        "value": "custom",
+        "displayValue": "Custom Event"
+      }
+    ],
+    "simpleValueType": true
+  },
+  {
+    "type": "TEXT",
+    "name": "customEventName",
+    "displayName": "Custom Event Name",
+    "simpleValueType": true,
+    "enablingConditions": [
+      {
+        "paramName": "eventType",
+        "paramValue": "custom",
+        "type": "EQUALS"
+      }
+    ]
+  },
+  {
+    "type": "SELECT",
+    "name": "actionSource",
+    "displayName": "Action Source",
+    "macrosInSelect": false,
+    "selectItems": [
+      {
+        "value": "website",
+        "displayValue": "Website"
+      },
+      {
+        "value": "email",
+        "displayValue": "Email"
+      },
+      {
+        "value": "app",
+        "displayValue": "App"
+      },
+      {
+        "value": "phone_call",
+        "displayValue": "Phone Call"
+      },
+      {
+        "value": "chat",
+        "displayValue": "Chat"
+      },
+      {
+        "value": "physical_store",
+        "displayValue": "Physical Store"
+      },
+      {
+        "value": "system_generated",
+        "displayValue": "System Generated"
+      },
+      {
+        "value": "other",
+        "displayValue": "Other"
+      }
+    ],
+    "simpleValueType": true
   }
 ]
 
 
-___WEB_PERMISSIONS___
+___SANDBOXED_JS_FOR_SERVER___
+
+const getAllEventData = require('getAllEventData');
+const sendHttpRequest = require('sendHttpRequest');
+const JSON = require('JSON');
+const getTimestampMillis = require('getTimestampMillis');
+const generateRandom = require('generateRandom');
+const sha256Sync = require('sha256Sync');
+const logToConsole = require('logToConsole');
+const Math = require('Math');
+const Object = require('Object');
+const getCookieValues = require('getCookieValues');
+const setCookie = require('setCookie');
+const makeString = require('makeString');
+const getType = require('getType');
+const toBase64 = require('toBase64');
+const getRequestHeader = require('getRequestHeader');
+const computeEffectiveTldPlusOne = require('computeEffectiveTldPlusOne');
+const fromBase64 = require('fromBase64');
+const createRegex = require('createRegex');
+const testRegex = require('testRegex');
+const decodeUriComponent = require('decodeUriComponent');
+const parseUrl = require('parseUrl');
+
+const eventData = getAllEventData();
+
+const commonCookie = eventData.common_cookie || {};
+
+const cookieOptions = {
+    domain: 'auto',
+    path: '/',
+    samesite: 'Lax',
+    secure: true,
+    'max-age': 7776000, // 90 days
+    HttpOnly: !!data.useHttpOnlyCookie
+};
+
+function isConsentGivenOrNotRequired() {
+    if (data.adStorageConsent !== 'required') return true;
+    if (eventData.consent_state) return !!eventData.consent_state.ad_storage;
+    const xGaGcs = eventData['x-ga-gcs'] || ''; // x-ga-gcs is a string like "G110"
+    return xGaGcs[2] === '1';
+}
+
+
+if (!isConsentGivenOrNotRequired()) {
+    return eventData.gtmOnSuccess();
+}
+
+function isHashed(value) {
+    if (!value) {
+        return false;
+    }
+    return makeString(value).match('^[A-Fa-f0-9]{64}$') !== null;
+}
+
+// Helper function to hash user data
+function hashData(key, value) {
+    if (!value) {
+        return value;
+    }
+
+    const type = getType(value);
+
+    if (type === 'undefined' || value === 'undefined') {
+        return undefined;
+    }
+
+    if (type === 'array') {
+        return value.map((val) => {
+            return hashData(key, val);
+        });
+    }
+
+    if (isHashed(value)) {
+        return value;
+    }
+
+    value = makeString(value).trim().toLowerCase();
+
+    if (key === 'ph') {
+        value = normalizePhoneNumber(value);
+    } else if (key === 'ct') {
+        value = value.split(' ').join('');
+    }
+
+    return sha256Sync(value, {outputEncoding: 'hex'});
+}
+
+function saveEecData(userData) {
+    let gtmeecCookie = {};
+
+    if (userData.em) gtmeecCookie.em = userData.em;
+    if (userData.ph) gtmeecCookie.ph = userData.ph;
+    if (userData.ln) gtmeecCookie.ln = userData.ln;
+    if (userData.fn) gtmeecCookie.fn = userData.fn;
+    if (userData.ct) gtmeecCookie.ct = userData.ct;
+    if (userData.st) gtmeecCookie.st = userData.st;
+    if (userData.cn) gtmeecCookie.cn = userData.cn;
+    if (userData.zp) gtmeecCookie.zp = userData.zp;
+    if (userData.ge) gtmeecCookie.ge = userData.ge;
+    if (userData.db) gtmeecCookie.db = userData.db;
+    if (userData.country) gtmeecCookie.country = userData.country;
+    if (userData.external_id) gtmeecCookie.external_id = userData.external_id;
+    if (userData.fb_login_id) gtmeecCookie.fb_login_id = userData.fb_login_id;
+
+    setCookie('_gtmeec', toBase64(JSON.stringify(gtmeecCookie)), {
+        domain: 'auto',
+        path: '/',
+        samesite: 'strict',
+        secure: true,
+        'max-age': 7776000, // 90 days
+        HttpOnly: true
+    });
+}
+
+function getEecData(userData) {
+    const cookieValues = getCookieValues('_gtmeec');
+    if ((!cookieValues || cookieValues.length === 0) && !commonCookie._gtmeec) {
+        return userData;
+    }
+
+    const encodedValue = cookieValues[0] || commonCookie._gtmeec;
+    if (!encodedValue) {
+        return userData;
+    }
+
+    const jsonStr = fromBase64(encodedValue);
+    if (!jsonStr) {
+        return userData;
+    }
+
+    const gtmeecData = JSON.parse(jsonStr);
+
+    if (gtmeecData) {
+        if (!userData.em && gtmeecData.em) userData.em = gtmeecData.em;
+        if (!userData.ph && gtmeecData.ph) userData.ph = gtmeecData.ph;
+        if (!userData.ln && gtmeecData.ph) userData.ln = gtmeecData.ln;
+        if (!userData.fn && gtmeecData.fn) userData.fn = gtmeecData.fn;
+        if (!userData.ct && gtmeecData.ct) userData.ct = gtmeecData.ct;
+        if (!userData.st && gtmeecData.st) userData.st = gtmeecData.st;
+        if (!userData.cn && gtmeecData.cn) userData.cn = gtmeecData.cn;
+        if (!userData.zp && gtmeecData.zp) userData.zp = gtmeecData.zp;
+        if (!userData.ge && gtmeecData.ge) userData.ge = gtmeecData.ge;
+        if (!userData.db && gtmeecData.db) userData.db = gtmeecData.db;
+        if (!userData.country && gtmeecData.country)
+            userData.country = gtmeecData.country;
+        if (!userData.external_id && gtmeecData.external_id)
+            userData.external_id = gtmeecData.external_id;
+        if (!userData.fb_login_id && gtmeecData.fb_login_id)
+            userData.fb_login_id = gtmeecData.fb_login_id;
+    }
+
+    return userData;
+}
+
+function normalizePhoneNumber(phoneNumber) {
+    if (!phoneNumber) return phoneNumber;
+    const itemRegex = createRegex('^[0-9]$');
+    return phoneNumber.split('').filter((item) => testRegex(itemRegex, item)).join('');
+}
+
+if (data.enableEnhancement) {
+//TODO: neden user_data override ediyor
+//eventData.user_data = getEecData(eventData.user_data);
+    saveEecData(getEecData(eventData));
+}
+
+function getAmpData(eventData) {
+    const userData = eventData.user_data || {};
+
+    const commonCookie = eventData.common_cookie || {};
+
+    let obj = {
+        ph: hashData(userData.ph),
+        em: hashData(userData.em),
+        ge: hashData(userData.ge),
+        db: hashData(userData.db),
+        ct: hashData(userData.ct),
+        zp: hashData(userData.zp),
+        cn: hashData(userData.cn),
+        fn: hashData(userData.fn),
+        ln: hashData(userData.ln),
+        subscription_id: userData.subscription_id,
+        lead_id: userData.lead_id,
+        external_id: userData.external_id,
+        fb_login_id: userData.fb_login_id
+    };
+
+    const handleCookie = (platform, objKey, cookieName) => {
+        if (data[platform]) {
+            obj[objKey] = getCookieValues(cookieName)[0] || commonCookie[cookieName];
+        }
+    };
+
+    handleCookie('fb', '_fbc', '_fbc');
+    handleCookie('fb', '_fbp', '_fbp');
+    handleCookie('tt', '_ttp', '_ttp');
+    handleCookie('tt', 'ttclid', 'ttclid');
+    handleCookie('sn', '_scid', '_scid');
+    handleCookie('pn', '_epik', '_epik');
+    handleCookie('ge', 'gclid', 'gclid');
+
+    const url = eventData.page_location;
+    const subDomainIndex = url ? computeEffectiveTldPlusOne(url).split('.').length - 1 : 1;
+
+    const handleDynamicCookie = (platform, objKey, param) => {
+        if (data[platform] && typeof obj[objKey] === 'undefined' && url) {
+            const urlParsed = parseUrl(url);
+
+            if (urlParsed && urlParsed.searchParams[param]) {
+                const clid = decodeUriComponent(urlParsed.searchParams[param]);
+
+                if (!obj[objKey] || (obj[objKey].split('.').pop() !== clid)) {
+                    obj[objKey] = platform + subDomainIndex + getTimestampMillis() + clid;
+                }
+            }
+
+            if (obj[objKey]) {
+                setCookie(objKey, obj[objKey], cookieOptions);
+            }
+        }
+    };
+
+    handleDynamicCookie('fb', '_fbc', 'fbclid');
+    handleDynamicCookie('tt', 'ttclid', 'ttclid');
+
+    return obj;
+}
+
+function getProductData(items) {
+    return items.map(item => ({
+        id: item.item_id,
+        quantity: item.quantity
+    }));
+}
+
+function padStartCustom(str, targetLength, padString) {
+    str = (str === undefined || str === null) ? '' : '' + str;
+    padString = (padString === undefined || padString === null) ? ' ' : '' + padString;
+
+    if (str.length >= targetLength) {
+        return str;
+    }
+
+    targetLength = targetLength - str.length;
+
+    while (padString.length < targetLength) {
+        padString += padString;
+    }
+
+    return padString.slice(0, targetLength) + str;
+}
+
+function generateEid() {
+    const segments = [8, 4, 4, 4, 12];
+    return segments.map(segment => {
+
+        var tempEid = generateRandom(0, Math.pow(16, segment) - 1).toString(16);
+        return padStartCustom(tempEid, segment, '0');  // Convert to hexadecimal
+    }).join('-');
+}
+
+function sendEventToApi(eventData) {
+    const event = {
+        eid: generateEid(),
+        et: eventData.eventType === 'custom' ? eventData.customEventName : eventData.eventType,
+        ua: data.actionSource === 'website' ? eventData.user_agent : data.actionSource,
+        p: {
+            event_time: Math.floor(getTimestampMillis() / 1000),
+            currency: eventData.currency,
+            value: eventData.value,
+            contents: getProductData(eventData.items || []),
+            content_type: "product",
+            content_category: eventData.content_category,
+            content_name: eventData.content_name
+        },
+        amp: getAmpData(eventData)
+    };
+
+    event.p = Object.keys(event.p).reduce((obj, key) => {
+        if (event.p[key] !== undefined) obj[key] = event.p[key];
+        return obj;
+    }, {});
+
+    event.amp = Object.keys(event.amp).reduce((obj, key) => {
+        if (event.amp[key] !== undefined) obj[key] = event.amp[key];
+        return obj;
+    }, {});
+
+    const requestBody = JSON.stringify(event);
+    const requestHeaders = {
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + data.apiToken
+        },
+        method: 'POST'
+    };
+
+    sendHttpRequest('https://cpi.ssevt.com/push/', (statusCode, headers, body) => {
+        if (statusCode >= 200 && statusCode < 300) {
+            data.gtmOnSuccess();
+        } else {
+            logToConsole('Error sending event to SignalSight API. Status code:', statusCode, 'Response:', body);
+            data.gtmOnFailure();
+        }
+    }, requestHeaders, requestBody);
+}
+
+sendEventToApi(eventData);
+
+
+___SERVER_PERMISSIONS___
 
 [
+  {
+    "instance": {
+      "key": {
+        "publicId": "read_event_data",
+        "versionId": "1"
+      },
+      "param": [
+        {
+          "key": "eventDataAccess",
+          "value": {
+            "type": 1,
+            "string": "any"
+          }
+        }
+      ]
+    },
+    "clientAnnotations": {
+      "isEditedByUser": true
+    },
+    "isRequired": true
+  },
+  {
+    "instance": {
+      "key": {
+        "publicId": "send_http",
+        "versionId": "1"
+      },
+      "param": [
+        {
+          "key": "allowedUrls",
+          "value": {
+            "type": 1,
+            "string": "specific"
+          }
+        },
+        {
+          "key": "urls",
+          "value": {
+            "type": 2,
+            "listItem": [
+              {
+                "type": 1,
+                "string": "https://cpi.ssevt.com/push/"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "clientAnnotations": {
+      "isEditedByUser": true
+    },
+    "isRequired": true
+  },
   {
     "instance": {
       "key": {
@@ -59,7 +583,7 @@ ___WEB_PERMISSIONS___
           "key": "environments",
           "value": {
             "type": 1,
-            "string": "debug"
+            "string": "all"
           }
         }
       ]
@@ -69,12 +593,254 @@ ___WEB_PERMISSIONS___
   {
     "instance": {
       "key": {
-        "publicId": "get_referrer",
+        "publicId": "set_cookies",
         "versionId": "1"
       },
       "param": [
         {
-          "key": "urlParts",
+          "key": "allowedCookies",
+          "value": {
+            "type": 2,
+            "listItem": [
+              {
+                "type": 3,
+                "mapKey": [
+                  {
+                    "type": 1,
+                    "string": "name"
+                  },
+                  {
+                    "type": 1,
+                    "string": "domain"
+                  },
+                  {
+                    "type": 1,
+                    "string": "path"
+                  },
+                  {
+                    "type": 1,
+                    "string": "secure"
+                  },
+                  {
+                    "type": 1,
+                    "string": "session"
+                  }
+                ],
+                "mapValue": [
+                  {
+                    "type": 1,
+                    "string": "_fbc"
+                  },
+                  {
+                    "type": 1,
+                    "string": "*"
+                  },
+                  {
+                    "type": 1,
+                    "string": "*"
+                  },
+                  {
+                    "type": 1,
+                    "string": "any"
+                  },
+                  {
+                    "type": 1,
+                    "string": "any"
+                  }
+                ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  {
+                    "type": 1,
+                    "string": "name"
+                  },
+                  {
+                    "type": 1,
+                    "string": "domain"
+                  },
+                  {
+                    "type": 1,
+                    "string": "path"
+                  },
+                  {
+                    "type": 1,
+                    "string": "secure"
+                  },
+                  {
+                    "type": 1,
+                    "string": "session"
+                  }
+                ],
+                "mapValue": [
+                  {
+                    "type": 1,
+                    "string": "_fbp"
+                  },
+                  {
+                    "type": 1,
+                    "string": "*"
+                  },
+                  {
+                    "type": 1,
+                    "string": "*"
+                  },
+                  {
+                    "type": 1,
+                    "string": "any"
+                  },
+                  {
+                    "type": 1,
+                    "string": "any"
+                  }
+                ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  {
+                    "type": 1,
+                    "string": "name"
+                  },
+                  {
+                    "type": 1,
+                    "string": "domain"
+                  },
+                  {
+                    "type": 1,
+                    "string": "path"
+                  },
+                  {
+                    "type": 1,
+                    "string": "secure"
+                  },
+                  {
+                    "type": 1,
+                    "string": "session"
+                  }
+                ],
+                "mapValue": [
+                  {
+                    "type": 1,
+                    "string": "_gtmeec"
+                  },
+                  {
+                    "type": 1,
+                    "string": "*"
+                  },
+                  {
+                    "type": 1,
+                    "string": "*"
+                  },
+                  {
+                    "type": 1,
+                    "string": "secure"
+                  },
+                  {
+                    "type": 1,
+                    "string": "any"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "clientAnnotations": {
+      "isEditedByUser": true
+    },
+    "isRequired": true
+  },
+  {
+    "instance": {
+      "key": {
+        "publicId": "get_cookies",
+        "versionId": "1"
+      },
+      "param": [
+        {
+          "key": "cookieAccess",
+          "value": {
+            "type": 1,
+            "string": "specific"
+          }
+        },
+        {
+          "key": "cookieNames",
+          "value": {
+            "type": 2,
+            "listItem": [
+              {
+                "type": 1,
+                "string": "_fbc"
+              },
+              {
+                "type": 1,
+                "string": "_fbp"
+              },
+              {
+                "type": 1,
+                "string": "_gtmeec"
+              },
+              {
+                "type": 1,
+                "string": "_ttp"
+              },
+              {
+                "type": 1,
+                "string": "_scid"
+              },
+              {
+                "type": 1,
+                "string": "_epik"
+              },
+              {
+                "type": 1,
+                "string": "ttclid"
+              },
+              {
+                "type": 1,
+                "string": "gclid"
+              },
+              {
+                "type": 1,
+                "string": "_p2s_gcl"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "clientAnnotations": {
+      "isEditedByUser": true
+    },
+    "isRequired": true
+  },
+  {
+    "instance": {
+      "key": {
+        "publicId": "read_request",
+        "versionId": "1"
+      },
+      "param": [
+        {
+          "key": "requestAccess",
+          "value": {
+            "type": 1,
+            "string": "specific"
+          }
+        },
+        {
+          "key": "headerAccess",
+          "value": {
+            "type": 1,
+            "string": "any"
+          }
+        },
+        {
+          "key": "queryParameterAccess",
           "value": {
             "type": 1,
             "string": "any"
@@ -87,23 +853,25 @@ ___WEB_PERMISSIONS___
 ]
 
 
-___SANDBOXED_JS_FOR_WEB_TEMPLATE___
+___TESTS___
 
-// Enter your template code here.
-const queryPermission = require('queryPermission');
-const getReferrerUrl = require('getReferrerUrl');
-let referrer;
-if (queryPermission('get_referrer', 'query')) {
-  referrer = getReferrerUrl('queryParams');
-}
+scenarios:
+- name: Send purchase event
+  code: |-
+    const mockData = {
+      apiToken: '123abc',
+      eventType: 'Purchase',
+      actionSource: 'signalsight',
+      currency:'USD',
+      value: '130',
+      content_category: 'E-commerce',
+      content_name: 'Product'
+    };
 
-var log = require('logToConsole');
-log('data =', data);
-
-// Call data.gtmOnSuccess when the tag is finished.
-data.gtmOnSuccess();
+    runCode(mockData);
+setup: ''
 
 
 ___NOTES___
 
-Created on 9/2/2019, 1:02:37 PM
+Created on 14/11/2024, 19:07
