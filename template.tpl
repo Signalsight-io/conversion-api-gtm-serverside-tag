@@ -48,7 +48,7 @@ ___TEMPLATE_PARAMETERS___
         "type": "NON_EMPTY"
       }
     ],
-    "help": "Enter your API token for authentication."
+    "help": "Don’t forget: your SignalSight token is required here. Create it by registering at SignalSight.io and adding a tracker—unlocking server-side delivery, clean signals, and fraud-resilient conversions."
   },
   {
     "type": "TEXT",
