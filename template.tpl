@@ -486,7 +486,8 @@ function sendEventToApi(eventData) {
             contents: getProductData(eventData.items || []),
             content_type: "product",
             content_category: eventData.content_category,
-            content_name: eventData.content_name
+            content_name: eventData.content_name,
+            via : 'gtmss'
         },
         amp: getAmpData(eventData)
     };
@@ -510,7 +511,7 @@ function sendEventToApi(eventData) {
         method: 'POST'
     };
 
-    sendHttpRequest('https://cpi.ssevt.com/push/', (statusCode, headers, body) => {
+    sendHttpRequest('https://cpi.ssevt.com/push/?via=gtmss', (statusCode, headers, body) => {
         if (statusCode >= 200 && statusCode < 300) {
             data.gtmOnSuccess();
         } else {
