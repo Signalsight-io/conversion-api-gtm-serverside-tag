@@ -15,5 +15,5 @@
 homepage: "https://www.signalsight.io"
 documentation: "https://www.signalsight.io/docs/"
 versions:
-  - sha: 5c44cc766af9e9e077680315e09a4768c203a0df
-    changeNotes: Description added.
+  - sha: 79b02a0ea5edd7fa32e97d5e9e80b9efab546acc
+    changeNotes: Via params added.
